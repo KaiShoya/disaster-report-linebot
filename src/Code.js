@@ -18,7 +18,7 @@ function doPost(e) {
       break;
     case 'message':
       var user_msg = JSON.parse(e.postData.contents).events[0].message.text;
-      var msg = MessageTemplate.createMsg(user_msg);
+      var msg = MessageTemplate.defaultMsg(user_msg);
       MessageTemplate.reply(reply_token, msg);
       break;
   }
@@ -27,12 +27,8 @@ function doPost(e) {
 
 // テスト用 urlを手動でコールして各関数を確認する
 function doGet(e) {
-  var user_msg = JSON.parse(e.postData.contents).events[0].message.text;
-  var msg = MessageTemplate.createMsg(user_msg);
+  var msg = MessageTemplate.defaultMsg("テストだよー");
   MessageTemplate.push(ADMINID, msg);
-return ContentService.createTextOutput(JSON.stringify({'content': 'ok'})).setMimeType(ContentService.MimeType.JSON);
-}
-
-function test() {
-  Logger.log(Context.findUser(ADMINID));
+  Context.logging("テストだよー");
+  return ContentService.createTextOutput(JSON.stringify({'content': 'ok'})).setMimeType(ContentService.MimeType.JSON);
 }
