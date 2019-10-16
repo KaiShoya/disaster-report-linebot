@@ -23,7 +23,7 @@ Context.logging = function(msg) {
     } else {
       var userid = msg.events[0].source.userId;
       var type = msg.events[0].type;
-      sheet.appendRow([ts, userid, type, msg]);
+      sheet.appendRow([ts, userid, type, msg.events[0]]);
     }
   } else {
     sheet.appendRow([ts,"","", msg]);

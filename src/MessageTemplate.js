@@ -1,7 +1,7 @@
 MessageTemplate = function(){};
 
 // ユーザーのつぶやきにリプライを返す
-MessageTemplate.reply = function(reply_token, msg) {
+MessageTemplate.reply = function(replyToken, msg) {
   UrlFetchApp.fetch('https://api.line.me/v2/bot/message/reply', {
     'headers': {
       'Content-Type': 'application/json; charset=UTF-8',
@@ -9,7 +9,7 @@ MessageTemplate.reply = function(reply_token, msg) {
     },
     'method': 'post',
     'payload': JSON.stringify({
-      'replyToken': reply_token,
+      'replyToken': replyToken,
       'messages': [msg],
     }),
   });
