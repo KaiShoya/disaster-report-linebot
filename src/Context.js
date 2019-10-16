@@ -15,7 +15,7 @@ Context.zeroPadding = function(num, digit) {
 // 連想配列はLineのログとして扱う
 Context.logging = function(msg) {
   var sheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName(SHEET_LOG),
-      ts    = new Date().toLocaleString('japanese', {timeZone: 'Asia/Osaka'});
+      ts    = new Date().toLocaleString('japanese', {timeZone: 'Asia/Tokyo'});
   if (msg instanceof Object) {
     if (msg instanceof Array) {
       msg.unshift(ts);
@@ -39,7 +39,7 @@ Context.formatYMD = function(date) {
 // // 登録されたユーザーのログを保存する
 // Context.userLog = function(id,txt,action) {
 //   var sheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName(SHEET_BOOKING),
-//       ts    = new Date().toLocaleString('japanese', {timeZone: 'Asia/Osaka'});
+//       ts    = new Date().toLocaleString('japanese', {timeZone: 'Asia/Tokyo'});
 
 //   var range = sheet.getDataRange();
 //   var column = this.findUser(id);
