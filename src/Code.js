@@ -1,6 +1,5 @@
 // lineからのwebhook受信時に発火する
 function doPost(e) {
-  Context.logging(e.postData.contents);
   Context.logging(JSON.parse(e.postData.contents));
   var userId = JSON.parse(e.postData.contents).events[0].source.userId;
   var replyToken = JSON.parse(e.postData.contents).events[0].replyToken;
