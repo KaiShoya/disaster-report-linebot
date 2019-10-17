@@ -53,6 +53,26 @@ function messageAnalysis(postData) {
       break;
     case 'サービス登録':
       break;
+    case undefined:
+      var message = postData.events[0].message;
+      if (message.type == 'location') {
+        var rowNo = Context.findRow(sheet, 0, userId);
+
+        if (rowNo == -1) break;
+
+        var row = sheet.getRange(Number(rowNo)+1, 1, 1, sheet.getLastColumn());
+        var values = row.getValues();
+
+        // 値セット
+        values[0][2] = message.address; // 住所
+        values[0][3] = message.latitude; // 緯度
+        values[0][4] = message.longitude; // 経度
+        values[0][8] = timestamp; // 更新タイムスタンプ
+
+        // 更新
+        row.setValues(values);
+      }
+      break;
     default:
       var msg = MessageTemplate.defaultMsg(userMsg);
       MessageTemplate.reply(replyToken, msg);
