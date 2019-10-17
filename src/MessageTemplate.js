@@ -30,9 +30,27 @@ MessageTemplate.push = function(to, msg) {
   });
 }
 
+// シンプルなテキストを送信するテンプレート
 MessageTemplate.defaultMsg = function(msg) {
   return {
     'type': 'text',
     'text': msg,
   };
+}
+
+// シンプルなテキスト + locationのクイックリプライ機能
+MessageTemplate.locationMsg = function(msg) {
+  return {
+    "type": "text",
+    "text": msg,
+    "quickReply": {
+      "items": [{
+        "type": "action",
+        "action": {
+          "type": "location",
+          "label": "地図を使って送信する"
+        }
+      }]
+    }
+  }
 }
