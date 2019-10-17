@@ -24,7 +24,7 @@ function doPost(e) {
 
 // テスト用 urlを手動でコールして各関数を確認する
 function doGet(e) {
-  var msg = MessageTemplate.locationMsg("災害が発生している住所を教えてください。");
+  var msg = MessageTemplate.locationMsg('災害が発生している住所を教えてください。');
   MessageTemplate.push(ADMINID, msg);
   return ContentService.createTextOutput(JSON.stringify({'content': 'ok'})).setMimeType(ContentService.MimeType.JSON);
 }
@@ -48,7 +48,7 @@ function messageAnalysis(postData) {
       }
       sheet.appendRow([userId, 0, null, null, null, null, null, null, timestamp]);
       // 位置情報
-      var msg = MessageTemplate.locationMsg("災害が発生している住所を教えてください。");
+      var msg = MessageTemplate.locationMsg('災害が発生している住所を教えてください。');
       MessageTemplate.reply(replyToken, msg);
       break;
     case 'サービス登録':

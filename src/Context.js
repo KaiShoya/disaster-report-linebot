@@ -26,7 +26,7 @@ Context.logging = function(msg) {
       sheet.appendRow([ts, userid, type, msg.events[0]]);
     }
   } else {
-    sheet.appendRow([ts,"","", msg]);
+    sheet.appendRow([ts,null,null, msg]);
   }
 }
 
@@ -51,7 +51,7 @@ Context.findRow = function(sheet, columnNo, text) {
 // date型をyyyy/mm/ddの文字列に変換する
 Context.formatYMD = function(date) {
   if (typeof date.getFullYear() !== 'function') return date;
-  return date.getFullYear()+"/"+tnis.zeroPadding(date.getMonth()+1)+"/"+tnis.zeroPadding(date.getDate());
+  return date.getFullYear()+'/'+tnis.zeroPadding(date.getMonth()+1)+'/'+tnis.zeroPadding(date.getDate());
 }
 
 // // 登録されたユーザーのログを保存する
@@ -88,8 +88,8 @@ Context.hash2param = function(data) {
   var arr = [];
   for (var i in data) {
     if (data.hasOwnProperty(i)) {
-      arr.push(i+"="+data[i]);
+      arr.push(i+'='+data[i]);
     }
   }
-  return arr.join("&");
+  return arr.join('&');
 }
