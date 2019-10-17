@@ -34,30 +34,26 @@ function messageAnalysis(postData) {
   var sheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName(SHEET_DRAFT);
   var timestamp = new Date().toLocaleString('japanese', {timeZone: 'Asia/Tokyo'});
 
-  var userMsg = postData.events[0].message.text;
+  var message = postData.events[0].message;
   var replyToken = postData.events[0].replyToken;
   var userId = postData.events[0].source.userId;
-  switch (userMsg) {
+  var rowNo = Context.findRow(sheet, 0, userId);
+  switch (message.text) {
     case '災害現場登録':
-      // 下書きシートに枠を作成
-      var rowNo = Context.findRow(sheet, 0, userId);
       if (rowNo != -1) {
         // 列を初期化
         var row = sheet.getRange(Number(rowNo)+1, 1, 1, sheet.getLastColumn());
         row.clearContent();
       }
       sheet.appendRow([userId, 0, null, null, null, null, null, null, timestamp]);
-      // 位置情報
+      // 位置情報用メッセージ
       var msg = MessageTemplate.locationMsg('災害が発生している住所を教えてください。');
       MessageTemplate.reply(replyToken, msg);
       break;
     case 'サービス登録':
       break;
     case undefined:
-      var message = postData.events[0].message;
       if (message.type == 'location') {
-        var rowNo = Context.findRow(sheet, 0, userId);
-
         if (rowNo == -1) break;
 
         var row = sheet.getRange(Number(rowNo)+1, 1, 1, sheet.getLastColumn());
@@ -74,7 +70,7 @@ function messageAnalysis(postData) {
       }
       break;
     default:
-      var msg = MessageTemplate.defaultMsg(userMsg);
+      var msg = MessageTemplate.defaultMsg(message.text);
       MessageTemplate.reply(replyToken, msg);
       break;
   }
