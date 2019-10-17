@@ -40,12 +40,22 @@ function messageAnalysis(postData) {
   var rowNo = Context.findRow(sheet, 0, userId);
   switch (message.text) {
     case '災害現場登録':
-      if (rowNo != -1) {
-        // 列を初期化
+      if (rowNo == -1) {
+        sheet.appendRow([userId, 0, null, null, null, null, null, null, timestamp]);
+      } else {
         var row = sheet.getRange(Number(rowNo)+1, 1, 1, sheet.getLastColumn());
-        row.clearContent();
+        var values = row.getValues();
+        // 列を初期化
+        for (i in values[0]) {
+          values[0][i] = null;
+        }
+        // 初期値セット
+        values[0][0] = userId; // ユーザーID
+        values[0][1] = 0; // タイプ
+        values[0][8] = timestamp; // 更新日時
+        // 更新
+        row.setValues(values);
       }
-      sheet.appendRow([userId, 0, null, null, null, null, null, null, timestamp]);
       // 位置情報用メッセージ
       var msg = MessageTemplate.locationMsg('災害が発生している住所を教えてください。');
       MessageTemplate.reply(replyToken, msg);
@@ -63,7 +73,7 @@ function messageAnalysis(postData) {
         values[0][2] = message.address; // 住所
         values[0][3] = message.latitude; // 緯度
         values[0][4] = message.longitude; // 経度
-        values[0][8] = timestamp; // 更新タイムスタンプ
+        values[0][8] = timestamp; // 更新日時
 
         // 更新
         row.setValues(values);
