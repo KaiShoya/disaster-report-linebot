@@ -30,6 +30,24 @@ Context.logging = function(msg) {
   }
 }
 
+// 列番号を指定して検索する
+// 見つからなかった場合-1を返す
+Context.findRow = function(sheet, columnNo, text) {
+  var sheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName(SHEET_DRAFT);
+  var range = sheet.getDataRange();
+  var values = range.getValues();
+
+  for(var i in values) {
+    var item = values[i][columnNo];
+    Logger.log(item);
+    if (text === item.toString()) {
+      return i;
+    }
+  }
+
+  return -1;
+}
+
 // date型をyyyy/mm/ddの文字列に変換する
 Context.formatYMD = function(date) {
   if (typeof date.getFullYear() !== 'function') return date;
