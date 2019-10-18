@@ -60,7 +60,7 @@ function messageAnalysis(replyToken, userId, message) {
       }
       // 位置情報用メッセージ
       var msg = MessageTemplate.locationMsg('災害が発生している住所を教えてください。');
-      MessageTemplate.reply(replyToken, msg);
+      MessageTemplate.reply(replyToken, [msg]);
       break;
     case 'サービス登録':
       break;
@@ -82,12 +82,12 @@ function messageAnalysis(replyToken, userId, message) {
 
         // 日時確認用メッセージ
         var msg = MessageTemplate.datetimePickerQuickMsg('確認した日時を教えてください。', 'datetime');
-        MessageTemplate.reply(replyToken, msg);
+        MessageTemplate.reply(replyToken, [msg]);
       }
       break;
     default:
       var msg = MessageTemplate.defaultMsg(message.text);
-      MessageTemplate.reply(replyToken, msg);
+      MessageTemplate.reply(replyToken, [msg]);
       break;
   }
 }
@@ -112,7 +112,7 @@ function postbackAnalysis(replyToken, userId, postback) {
       row.setValues(values);
 
       var msg = MessageTemplate.defaultMsg(Context.datetime2japanese(postback.params.datetime));
-      MessageTemplate.reply(replyToken, msg);
+      MessageTemplate.reply(replyToken, [msg]);
 
       break;
     default:

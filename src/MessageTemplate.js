@@ -10,7 +10,7 @@ MessageTemplate.reply = function(replyToken, msg) {
     'method': 'post',
     'payload': JSON.stringify({
       'replyToken': replyToken,
-      'messages': [msg],
+      'messages': msg,
     }),
   });
 }
@@ -25,7 +25,7 @@ MessageTemplate.push = function(to, msg) {
     'method': 'post',
     'payload': JSON.stringify({
       'to': to,
-      'messages': [msg],
+      'messages': msg,
     }),
   });
 }
