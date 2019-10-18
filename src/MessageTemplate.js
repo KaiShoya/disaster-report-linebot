@@ -106,3 +106,35 @@ MessageTemplate.checkConditionMsg = function(msg, data) {
   }
 }
 
+MessageTemplate.imageMsg = function(msg, data) {
+  return {
+    'type': 'text',
+    'text': msg,
+    'quickReply': {
+      'items': [
+        {
+          'type': 'action',
+          'action': {  
+            'type': 'camera',
+            'label': '撮影する'
+          }
+        },
+        {
+          'type': 'action',
+          'action': {  
+            'type': 'cameraRoll',
+            'label': 'カメラロールから選択する'
+          }
+        },
+        {
+          'type': 'action',
+          'action': {
+            'type':'postback',
+            'label':'選択しない',
+            'data':'type=image&action=noimage'
+          }
+        }
+      ]
+    }
+  }
+}

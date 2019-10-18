@@ -127,7 +127,23 @@ function postbackAnalysis(replyToken, userId, postback) {
 
       // 更新
       row.setValues(values);
+
+      var msg = MessageTemplate.imageMsg('被害状況のわかる写真をアップロードしてください。', 'image');
+      MessageTemplate.reply(replyToken, [msg]);
       break;
+    case 'image':
+      if (rowNo == -1) break;
+
+      var row = sheet.getRange(Number(rowNo)+1, 1, 1, sheet.getLastColumn());
+      var values = row.getValues();
+
+      var text = "";
+      text += "種類: 災害現場登録\n";
+      text += "住所: " + values[0][2] + '\n';
+      text += "確認日時: " + values[0][5] + '\n';
+      text += "状況: " + values[0][6];
+      var msg = MessageTemplate.defaultMsg(text);
+      MessageTemplate.reply(replyToken, [msg]);
     default:
       break;
   }
