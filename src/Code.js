@@ -98,7 +98,8 @@ function postbackAnalysis(replyToken, userId, postback) {
   var timestamp = new Date().toLocaleString('japanese', {timeZone: 'Asia/Tokyo'});
 
   var rowNo = Context.findRow(sheet, 0, userId);
-  switch (postback.data) {
+  var data = Context.postback2hash(postback.data);
+  switch (data.type) {
     case 'datetime':
       if (rowNo == -1) break;
 
@@ -111,9 +112,21 @@ function postbackAnalysis(replyToken, userId, postback) {
       // 更新
       row.setValues(values);
 
-      var msg = MessageTemplate.defaultMsg(Context.datetime2japanese(postback.params.datetime));
-      MessageTemplate.reply(replyToken, [msg]);
+      var datetimeMsg = MessageTemplate.defaultMsg(Context.datetime2japanese(postback.params.datetime));
+      var questionMsg = MessageTemplate.checkConditionMsg("どんな状況ですか？", 'checkCondition');
+      MessageTemplate.reply(replyToken, [datetimeMsg, questionMsg]);
+      break;
+    case 'checkCondition':
+      if (rowNo == -1) break;
 
+      var row = sheet.getRange(Number(rowNo)+1, 1, 1, sheet.getLastColumn());
+      var values = row.getValues();
+
+      values[0][6] = data.action; // 状況
+      values[0][8] = timestamp; // 更新日時
+
+      // 更新
+      row.setValues(values);
       break;
     default:
       break;

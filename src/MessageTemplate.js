@@ -66,9 +66,42 @@ MessageTemplate.datetimePickerQuickMsg = function(msg, data) {
           'type': 'datetimepicker',
           'label': '日時を入力する',
           'mode': 'datetime',
-          'data': data
+          'data': 'type=' + data
         }
       }]
+    }
+  }
+}
+
+MessageTemplate.checkConditionMsg = function(msg, data) {
+  return         {
+    'type': 'template',
+    'altText': msg,
+    'template': {
+      'type': 'buttons',
+      'text': msg,
+      'actions': [
+        {
+          'type': 'postback',
+          'label': '全く通れない',
+          'data': 'type=' + data + '&action=1'
+        },
+        {
+          'type': 'postback',
+          'label': '徒歩でなら通れる',
+          'data': 'type=' + data + '&action=2'
+        },
+        {
+          'type': 'postback',
+          'label': '通れる',
+          'data': 'type=' + data + '&action=3'
+        },
+        {
+          'type': 'postback',
+          'label': 'どれにも当てはまらない',
+          'data': 'type=' + data + '&action=0'
+        }
+      ]
     }
   }
 }
