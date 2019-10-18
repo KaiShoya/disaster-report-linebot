@@ -3,6 +3,7 @@ function doPost(e) {
   var postData = JSON.parse(e.postData.contents);
   Context.logging(postData);
   var replyToken = postData.events[0].replyToken;
+  var userId = postData.events[0].source.userId;
   if (typeof replyToken === 'undefined') {
     return ContentService.createTextOutput(JSON.stringify({'content': 'replyToken is undefined.'})).setMimeType(ContentService.MimeType.JSON);
   }
@@ -16,7 +17,8 @@ function doPost(e) {
     default:
       break;
     case 'message':
-      messageAnalysis(postData);
+      var message = postData.events[0].message;
+      messageAnalysis(replyToken, userId, message);
       break;
   }
   return ContentService.createTextOutput(JSON.stringify({'content': 'post ok'})).setMimeType(ContentService.MimeType.JSON);
@@ -30,13 +32,10 @@ function doGet(e) {
 }
 
 // ユーザーから送られてきたデータを解析して各処理に振り分ける
-function messageAnalysis(postData) {
+function messageAnalysis(replyToken, userId, message) {
   var sheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName(SHEET_DRAFT);
   var timestamp = new Date().toLocaleString('japanese', {timeZone: 'Asia/Tokyo'});
 
-  var message = postData.events[0].message;
-  var replyToken = postData.events[0].replyToken;
-  var userId = postData.events[0].source.userId;
   var rowNo = Context.findRow(sheet, 0, userId);
   switch (message.text) {
     case '災害現場登録':
