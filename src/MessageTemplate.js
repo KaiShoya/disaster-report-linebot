@@ -54,3 +54,22 @@ MessageTemplate.locationMsg = function(msg) {
     }
   }
 }
+
+MessageTemplate.datetimePickerQuickMsg = function(msg, data) {
+  return {
+    'type': 'text',
+    'text': msg,
+    'quickReply': {
+      'items': [{
+        'type': 'action',
+        'action': {
+          'type': 'datetimepicker',
+          'label': '日時を入力する',
+          'mode': 'datetime',
+          'data': data
+        }
+      }]
+    }
+  }
+}
+

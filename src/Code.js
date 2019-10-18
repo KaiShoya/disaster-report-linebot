@@ -13,8 +13,11 @@ function doPost(e) {
     case 'unfollow':
     case 'join':
     case 'leave':
-    case 'postback':
     default:
+      break;
+    case 'postback':
+      var postback = postData.events[0].postback;
+      postbackAnalysis(replyToken, userId, postback);
       break;
     case 'message':
       var message = postData.events[0].message;
@@ -76,11 +79,43 @@ function messageAnalysis(replyToken, userId, message) {
 
         // 更新
         row.setValues(values);
+
+        // 日時確認用メッセージ
+        var msg = MessageTemplate.datetimePickerQuickMsg('確認した日時を教えてください。', 'datetime');
+        MessageTemplate.reply(replyToken, msg);
       }
       break;
     default:
       var msg = MessageTemplate.defaultMsg(message.text);
       MessageTemplate.reply(replyToken, msg);
+      break;
+  }
+}
+
+// ユーザーからpostbackで送られてきたデータを解析して各処理に振り分ける
+function postbackAnalysis(replyToken, userId, postback) {
+  var sheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName(SHEET_DRAFT);
+  var timestamp = new Date().toLocaleString('japanese', {timeZone: 'Asia/Tokyo'});
+
+  var rowNo = Context.findRow(sheet, 0, userId);
+  switch (postback.data) {
+    case 'datetime':
+      if (rowNo == -1) break;
+
+      var row = sheet.getRange(Number(rowNo)+1, 1, 1, sheet.getLastColumn());
+      var values = row.getValues();
+
+      values[0][5] = postback.params.datetime; // 確認日時
+      values[0][8] = timestamp; // 更新日時
+
+      // 更新
+      row.setValues(values);
+
+      var msg = MessageTemplate.defaultMsg(Context.datetime2japanese(postback.params.datetime));
+      MessageTemplate.reply(replyToken, msg);
+
+      break;
+    default:
       break;
   }
 }

@@ -93,3 +93,11 @@ Context.hash2param = function(data) {
   }
   return arr.join('&');
 }
+
+// datetimepickerで取得した値を日本人向けにフォーマットする
+Context.datetime2japanese = function(value) {
+  var array = value.split('T');
+  var date = array[0].split('-');
+  var time = array[1].split(':');
+  return date[0] + '年' + date[1] + '月' + date[2] + '日' + time[0] + '時' + time[1] + '分';
+}
