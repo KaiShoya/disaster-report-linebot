@@ -63,6 +63,25 @@ function messageAnalysis(replyToken, userId, message) {
       MessageTemplate.reply(replyToken, [msg]);
       break;
     case 'サービス登録':
+      if (rowNo == -1) {
+        sheet.appendRow([userId, 0, null, null, null, null, null, null, timestamp]);
+      } else {
+        var row = sheet.getRange(Number(rowNo)+1, 1, 1, sheet.getLastColumn());
+        var values = row.getValues();
+        // 列を初期化
+        for (i in values[0]) {
+          values[0][i] = null;
+        }
+        // 初期値セット
+        values[0][0] = userId; // ユーザーID
+        values[0][1] = 0; // タイプ
+        values[0][8] = timestamp; // 更新日時
+        // 更新
+        row.setValues(values);
+      }
+
+      var msg = MessageTemplate.imageMsg('被害状況のわかる写真をアップロードしてください。', 'image');
+      MessageTemplate.reply(replyToken, [msg]);
       break;
     case undefined:
       if (message.type == 'location') {
@@ -83,6 +102,32 @@ function messageAnalysis(replyToken, userId, message) {
         // 日時確認用メッセージ
         var msg = MessageTemplate.datetimePickerQuickMsg('確認した日時を教えてください。', 'datetime');
         MessageTemplate.reply(replyToken, [msg]);
+      } else if (message.type == 'image') {
+        if (rowNo == -1) break;
+
+        if (message.contentProvider.type == 'line') {
+          var response = MessageTemplate.getImage(message.id);
+          var fileBlob = response.getBlob().setName(message.id);
+          var fileId = Context.saveDrive(fileBlob);
+
+          var row = sheet.getRange(Number(rowNo)+1, 1, 1, sheet.getLastColumn());
+          var values = row.getValues();
+
+          // 値セット
+          values[0][7] = fileId; // GoogleDriveの画像ID
+          values[0][8] = timestamp; // 更新日時
+
+          // 更新
+          row.setValues(values);
+
+          var text = [];
+          text.push(MessageTemplate.flexMsg('種類: 災害現場登録'));
+          text.push(MessageTemplate.flexMsg('住所: ' + values[0][2]));
+          text.push(MessageTemplate.flexMsg('確認日時: ' + values[0][5]));
+          text.push(MessageTemplate.flexMsg('状況: ' + values[0][6]));
+          var msg = MessageTemplate.finalCheckMsg(text, values[0][7]);
+          MessageTemplate.reply(replyToken, [msg]);
+        }
       }
       break;
     default:
@@ -144,6 +189,41 @@ function postbackAnalysis(replyToken, userId, postback) {
       text += "状況: " + values[0][6];
       var msg = MessageTemplate.defaultMsg(text);
       MessageTemplate.reply(replyToken, [msg]);
+    case 'finalCheck':
+      if (rowNo == -1) break;
+
+      var row = sheet.getRange(Number(rowNo)+1, 1, 1, sheet.getLastColumn());
+      var values = row.getValues();
+
+      switch (data.action) {
+        case 'register':
+          var locationSheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName(SHEET_LOCATION);
+          locationSheet.appendRow(values[0]);
+          var msg = MessageTemplate.defaultMsg('登録しました！');
+          MessageTemplate.reply(replyToken, [msg]);
+
+          // 下書きデータ削除
+          for (i in values[0]) {
+            values[0][i] = null;
+          }
+          row.setValues(values);
+          break;
+        case 'edit':
+          var msg = MessageTemplate.defaultMsg('どの項目を編集しますか？');
+          MessageTemplate.reply(replyToken, [msg]);
+          break;
+        case 'discard':
+          // 下書きデータ削除
+          for (i in values[0]) {
+            values[0][i] = null;
+          }
+          row.setValues(values);
+
+          var msg = MessageTemplate.defaultMsg('破棄しました。');
+          MessageTemplate.reply(replyToken, [msg]);
+          break;
+      }
+      break;
     default:
       break;
   }

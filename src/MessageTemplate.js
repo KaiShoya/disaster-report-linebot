@@ -30,6 +30,18 @@ MessageTemplate.push = function(to, msg) {
   });
 }
 
+// 画像を取得する
+MessageTemplate.getImage = function(messageId) {
+  var url = 'https://api.line.me/v2/bot/message/' + messageId + '/content';
+  return UrlFetchApp.fetch(url, {
+    'headers': {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + CHANNEL_ACCESS_TOKEN,
+    },
+    'method': 'get'
+  });
+}
+
 // シンプルなテキストを送信するテンプレート
 MessageTemplate.defaultMsg = function(msg) {
   return {
@@ -135,6 +147,78 @@ MessageTemplate.imageMsg = function(msg, data) {
           }
         }
       ]
+    }
+  }
+}
+
+// Flex Messageで使用するプレーンなメッセージ
+MessageTemplate.flexMsg = function(msg) {
+  return {
+    'type': 'text',
+    'text': msg,
+    'wrap': true
+  }
+}
+
+// 最終確認用のメッセージ
+MessageTemplate.finalCheckMsg = function(msg, imgId) {
+  return {
+    'type': 'flex',
+    'altText': 'this is a flex message',
+    'contents': {
+      'type': 'bubble',
+      'header': {
+        'type': 'box',
+        'layout': 'vertical',
+        'contents': [
+          {
+            'type': 'text',
+            'text': '登録情報'
+          }
+        ]
+      },
+      'hero': {
+        'type': 'image',
+        'align': 'center',
+        'aspectMode': 'cover',
+        'size': 'full',
+        'url': 'https://drive.google.com/uc?export=view&id=' + imgId
+      },
+      'body': {
+        'type': 'box',
+        'layout': 'vertical',
+        'contents': msg
+      },
+      'footer': {
+        'type': 'box',
+        'layout': 'vertical',
+        'contents': [
+          {
+            'type': 'button',
+            'action': {
+              'type': 'postback',
+              'label': '登録する',
+              'data': 'type=finalCheck&action=register'
+            }
+          },
+          {
+            'type': 'button',
+            'action': {
+              'type': 'postback',
+              'label': '修正する',
+              'data': 'type=finalCheck&action=edit'
+            }
+          },
+          {
+            'type': 'button',
+            'action': {
+              'type': 'postback',
+              'label': '破棄する',
+              'data': 'type=finalCheck&action=discard'
+            }
+          }
+        ]
+      }
     }
   }
 }

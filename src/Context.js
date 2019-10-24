@@ -101,3 +101,23 @@ Context.datetime2japanese = function(value) {
   var time = array[1].split(':');
   return date[0] + '年' + date[1] + '月' + date[2] + '日' + time[0] + '時' + time[1] + '分';
 }
+
+// 画像をGoogleDriveに保存する
+Context.saveDrive = function(fileBlob) {
+  // ルートディレクトリに画像を保存
+  var file = DriveApp.createFile(fileBlob);
+
+  // ディレクトリの階層を移動
+  var folders = DriveApp.getFoldersByName('upload');
+  while(folders.hasNext()) {
+    var folder = folders.next();
+    if(folder.getName() == 'upload') {
+      // 画像をコピー
+      var savedFile = file.makeCopy(file.getName(), folder);
+      // ルートディレクトリの画像を削除
+      file.setTrashed(true);
+      return savedFile.getId();
+    }
+  }
+}
+
