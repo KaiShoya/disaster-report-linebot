@@ -52,18 +52,13 @@ function messageAnalysis(replyToken: string, userId: string, message: any) {
   const rowNo = Context.findRow(sheet, 0, userId)
   switch (message.text) {
     case '災害現場登録': {
+      const draft: Coordinate = new Coordinate()
+      // 初期値セット
+      draft.id = userId
+      draft.type = '0'
       if (rowNo == -1) {
-        sheet.appendRow([
-          userId,
-          0,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          timestamp
-        ])
+        // 追加
+        sheet.appendRow(draft.getArray())
       } else {
         const row = sheet.getRange(
           Number(rowNo) + 1,
@@ -71,17 +66,8 @@ function messageAnalysis(replyToken: string, userId: string, message: any) {
           1,
           sheet.getLastColumn()
         )
-        const values = row.getValues()
-        // 列を初期化
-        for (let i in values[0]) {
-          values[0][i] = null
-        }
-        // 初期値セット
-        values[0][0] = userId // ユーザーID
-        values[0][1] = 0 // タイプ
-        values[0][8] = timestamp // 更新日時
         // 更新
-        row.setValues(values)
+        row.setValues([draft.getArray()])
       }
       // 位置情報用メッセージ
       const msg = MessageTemplate.locationMsg(
@@ -91,18 +77,13 @@ function messageAnalysis(replyToken: string, userId: string, message: any) {
       break
     }
     case 'サービス登録': {
+      const draft: Coordinate = new Coordinate()
+      // 初期値セット
+      draft.id = userId
+      draft.type = '1'
       if (rowNo == -1) {
-        sheet.appendRow([
-          userId,
-          0,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          timestamp
-        ])
+        // 追加
+        sheet.appendRow(draft.getArray())
       } else {
         const row = sheet.getRange(
           Number(rowNo) + 1,
@@ -110,17 +91,8 @@ function messageAnalysis(replyToken: string, userId: string, message: any) {
           1,
           sheet.getLastColumn()
         )
-        const values = row.getValues()
-        // 列を初期化
-        for (let i in values[0]) {
-          values[0][i] = null
-        }
-        // 初期値セット
-        values[0][0] = userId // ユーザーID
-        values[0][1] = 0 // タイプ
-        values[0][8] = timestamp // 更新日時
         // 更新
-        row.setValues(values)
+        row.setValues([draft.getArray()])
       }
 
       const msg = MessageTemplate.imageMsg(
@@ -142,14 +114,15 @@ function messageAnalysis(replyToken: string, userId: string, message: any) {
         )
         const values = row.getValues()
 
+        const draft: Coordinate = new Coordinate()
+        draft.setValues(values[0])
         // 値セット
-        values[0][2] = message.address // 住所
-        values[0][3] = message.latitude // 緯度
-        values[0][4] = message.longitude // 経度
-        values[0][8] = timestamp // 更新日時
+        draft.address = message.address // 住所
+        draft.latitude = message.latitude // 緯度
+        draft.longitude = message.longitude // 経度
 
         // 更新
-        row.setValues(values)
+        row.setValues([draft.getArray()])
 
         // 日時確認用メッセージ
         const msg = MessageTemplate.datetimePickerQuickMsg(
@@ -172,20 +145,19 @@ function messageAnalysis(replyToken: string, userId: string, message: any) {
             sheet.getLastColumn()
           )
           let values = row.getValues()
-
-          // 値セット
-          values[0][7] = fileId // GoogleDriveの画像ID
-          values[0][8] = timestamp // 更新日時
+          const draft: Coordinate = new Coordinate()
+          draft.setValues(values[0])
+          draft.imagePath = fileId
 
           // 更新
-          row.setValues(values)
+          row.setValues([draft.getArray()])
 
           let text = []
           text.push(MessageTemplate.flexMsg('種類: 災害現場登録'))
-          text.push(MessageTemplate.flexMsg('住所: ' + values[0][2]))
-          text.push(MessageTemplate.flexMsg('確認日時: ' + values[0][5]))
-          text.push(MessageTemplate.flexMsg('状況: ' + values[0][6]))
-          const msg = MessageTemplate.finalCheckMsg(text, values[0][7])
+          text.push(MessageTemplate.flexMsg('住所: ' + draft.address))
+          text.push(MessageTemplate.flexMsg('確認日時: ' + draft.datetime))
+          text.push(MessageTemplate.flexMsg('状況: ' + draft.situation))
+          const msg = MessageTemplate.finalCheckMsg(text, draft.imagePath)
           MessageTemplate.reply(replyToken, [msg])
         }
       }
@@ -215,11 +187,12 @@ function postbackAnalysis(replyToken: string, userId: string, postback: any) {
       const row = sheet.getRange(Number(rowNo) + 1, 1, 1, sheet.getLastColumn())
       const values = row.getValues()
 
-      values[0][5] = postback.params.datetime // 確認日時
-      values[0][8] = timestamp // 更新日時
+      const draft: Coordinate = new Coordinate()
+      draft.setValues(values[0])
+      draft.datetime = postback.params.datetime
 
       // 更新
-      row.setValues(values)
+      row.setValues([draft.getArray()])
 
       const datetimeMsg = MessageTemplate.defaultMsg(
         Context.datetime2japanese(postback.params.datetime)
@@ -237,11 +210,12 @@ function postbackAnalysis(replyToken: string, userId: string, postback: any) {
       const row = sheet.getRange(Number(rowNo) + 1, 1, 1, sheet.getLastColumn())
       const values = row.getValues()
 
-      values[0][6] = data['action'] // 状況
-      values[0][8] = timestamp // 更新日時
+      const draft: Coordinate = new Coordinate()
+      draft.setValues(values[0])
+      draft.situation = data['action']
 
       // 更新
-      row.setValues(values)
+      row.setValues([draft.getArray()])
 
       const msg = MessageTemplate.imageMsg(
         '被害状況のわかる写真をアップロードしてください。',
