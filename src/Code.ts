@@ -31,15 +31,23 @@ function doPost(e: any) {
   ).setMimeType(ContentService.MimeType.JSON)
 }
 
-// テスト用 urlを手動でコールして各関数を確認する
+// GoogleMapにSpreadsheetの座標データを表示する
 function doGet(e: any) {
-  const msg: Object = MessageTemplate.locationMsg(
-    '災害が発生している住所を教えてください。'
-  )
-  MessageTemplate.push(ADMINID, [msg])
-  return ContentService.createTextOutput(
-    JSON.stringify({content: 'ok'})
-  ).setMimeType(ContentService.MimeType.JSON)
+  const sheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName(SHEET_LOCATION)
+  const row = sheet.getDataRange()
+  const values = row.getValues()
+  let locations = []
+
+  for (let i in values) {
+    locations.push({
+      lat: values[i][3],
+      lng: values[i][4]
+    })
+  }
+
+  let tff = HtmlService.createTemplateFromFile('html/index')
+  tff.locations = JSON.stringify(locations)
+  return tff.evaluate()
 }
 
 // ユーザーから送られてきたデータを解析して各処理に振り分ける
