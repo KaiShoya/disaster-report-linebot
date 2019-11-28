@@ -52,31 +52,14 @@ function doGet(e: any) {
 
 // ユーザーから送られてきたデータを解析して各処理に振り分ける
 function messageAnalysis(replyToken: string, userId: string, message: any) {
-  const sheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName(SHEET_DRAFT)
-  const timestamp = new Date().toLocaleString('japanese', {
-    timeZone: 'Asia/Tokyo'
-  })
-
-  const rowNo = Context.findRow(sheet, 0, userId)
+  const draft: Coordinate = new Coordinate(userId)
   switch (message.text) {
     case '災害現場登録': {
-      const draft: Coordinate = new Coordinate()
       // 初期値セット
       draft.id = userId
       draft.type = '0'
-      if (rowNo == -1) {
-        // 追加
-        sheet.appendRow(draft.getArray())
-      } else {
-        const row = sheet.getRange(
-          Number(rowNo) + 1,
-          1,
-          1,
-          sheet.getLastColumn()
-        )
-        // 更新
-        row.setValues([draft.getArray()])
-      }
+      // データを保存する
+      draft.replace()
       // 位置情報用メッセージ
       const msg = MessageTemplate.locationMsg(
         '災害が発生している住所を教えてください。'
@@ -85,23 +68,11 @@ function messageAnalysis(replyToken: string, userId: string, message: any) {
       break
     }
     case 'サービス登録': {
-      const draft: Coordinate = new Coordinate()
       // 初期値セット
       draft.id = userId
       draft.type = '1'
-      if (rowNo == -1) {
-        // 追加
-        sheet.appendRow(draft.getArray())
-      } else {
-        const row = sheet.getRange(
-          Number(rowNo) + 1,
-          1,
-          1,
-          sheet.getLastColumn()
-        )
-        // 更新
-        row.setValues([draft.getArray()])
-      }
+      // データを保存する
+      draft.replace()
 
       const msg = MessageTemplate.imageMsg(
         '被害状況のわかる写真をアップロードしてください。',
@@ -112,25 +83,12 @@ function messageAnalysis(replyToken: string, userId: string, message: any) {
     }
     case undefined: {
       if (message.type == 'location') {
-        if (rowNo == -1) break
-
-        const row = sheet.getRange(
-          Number(rowNo) + 1,
-          1,
-          1,
-          sheet.getLastColumn()
-        )
-        const values = row.getValues()
-
-        const draft: Coordinate = new Coordinate()
-        draft.setValues(values[0])
         // 値セット
         draft.address = message.address // 住所
         draft.latitude = message.latitude // 緯度
         draft.longitude = message.longitude // 経度
-
         // 更新
-        row.setValues([draft.getArray()])
+        draft.update()
 
         // 日時確認用メッセージ
         const msg = MessageTemplate.datetimePickerQuickMsg(
@@ -139,26 +97,14 @@ function messageAnalysis(replyToken: string, userId: string, message: any) {
         )
         MessageTemplate.reply(replyToken, [msg])
       } else if (message.type == 'image') {
-        if (rowNo == -1) break
-
         if (message.contentProvider.type == 'line') {
           const response = MessageTemplate.getImage(message.id)
           const fileBlob = response.getBlob().setName(message.id)
           const fileId = Context.saveDrive(fileBlob)
 
-          const row = sheet.getRange(
-            Number(rowNo) + 1,
-            1,
-            1,
-            sheet.getLastColumn()
-          )
-          let values = row.getValues()
-          const draft: Coordinate = new Coordinate()
-          draft.setValues(values[0])
           draft.imagePath = fileId
-
           // 更新
-          row.setValues([draft.getArray()])
+          draft.update()
 
           let text = []
           text.push(MessageTemplate.flexMsg('種類: 災害現場登録'))
@@ -181,26 +127,13 @@ function messageAnalysis(replyToken: string, userId: string, message: any) {
 
 // ユーザーからpostbackで送られてきたデータを解析して各処理に振り分ける
 function postbackAnalysis(replyToken: string, userId: string, postback: any) {
-  const sheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName(SHEET_DRAFT)
-  const timestamp = new Date().toLocaleString('japanese', {
-    timeZone: 'Asia/Tokyo'
-  })
-
-  const rowNo = Context.findRow(sheet, 0, userId)
+  const draft: Coordinate = new Coordinate(userId)
   const data = Context.postback2hash(postback.data)
   switch (data['type']) {
     case 'datetime': {
-      if (rowNo == -1) break
-
-      const row = sheet.getRange(Number(rowNo) + 1, 1, 1, sheet.getLastColumn())
-      const values = row.getValues()
-
-      const draft: Coordinate = new Coordinate()
-      draft.setValues(values[0])
       draft.datetime = postback.params.datetime
-
       // 更新
-      row.setValues([draft.getArray()])
+      draft.update()
 
       const datetimeMsg = MessageTemplate.defaultMsg(
         Context.datetime2japanese(postback.params.datetime)
@@ -213,17 +146,9 @@ function postbackAnalysis(replyToken: string, userId: string, postback: any) {
       break
     }
     case 'checkCondition': {
-      if (rowNo == -1) break
-
-      const row = sheet.getRange(Number(rowNo) + 1, 1, 1, sheet.getLastColumn())
-      const values = row.getValues()
-
-      const draft: Coordinate = new Coordinate()
-      draft.setValues(values[0])
       draft.situation = data['action']
-
       // 更新
-      row.setValues([draft.getArray()])
+      draft.update()
 
       const msg = MessageTemplate.imageMsg(
         '被害状況のわかる写真をアップロードしてください。',
@@ -233,39 +158,20 @@ function postbackAnalysis(replyToken: string, userId: string, postback: any) {
       break
     }
     case 'image': {
-      if (rowNo == -1) break
-
-      const row = sheet.getRange(Number(rowNo) + 1, 1, 1, sheet.getLastColumn())
-      const values = row.getValues()
-
       var text = ''
       text += '種類: 災害現場登録\n'
-      text += '住所: ' + values[0][2] + '\n'
-      text += '確認日時: ' + values[0][5] + '\n'
-      text += '状況: ' + values[0][6]
+      text += '住所: ' + draft.address + '\n'
+      text += '確認日時: ' + draft.datetime + '\n'
+      text += '状況: ' + draft.situation
       const msg = MessageTemplate.defaultMsg(text)
       MessageTemplate.reply(replyToken, [msg])
     }
     case 'finalCheck': {
-      if (rowNo == -1) break
-
-      const row = sheet.getRange(Number(rowNo) + 1, 1, 1, sheet.getLastColumn())
-      const values = row.getValues()
-
       switch (data['action']) {
         case 'register': {
-          const locationSheet = SpreadsheetApp.openById(
-            SHEET_ID
-          ).getSheetByName(SHEET_LOCATION)
-          locationSheet.appendRow(values[0])
+          draft.save()
           const msg = MessageTemplate.defaultMsg('登録しました！')
           MessageTemplate.reply(replyToken, [msg])
-
-          // 下書きデータ削除
-          for (let i in values[0]) {
-            values[0][i] = null
-          }
-          row.setValues(values)
           break
         }
         case 'edit': {
@@ -275,11 +181,7 @@ function postbackAnalysis(replyToken: string, userId: string, postback: any) {
         }
         case 'discard': {
           // 下書きデータ削除
-          for (let i in values[0]) {
-            values[0][i] = null
-          }
-          row.setValues(values)
-
+          draft.delete()
           const msg = MessageTemplate.defaultMsg('破棄しました。')
           MessageTemplate.reply(replyToken, [msg])
           break
