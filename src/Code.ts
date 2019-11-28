@@ -61,10 +61,8 @@ function messageAnalysis(replyToken: string, userId: string, message: any) {
       // データを保存する
       draft.replace()
       // 位置情報用メッセージ
-      const msg = MessageTemplate.locationMsg(
-        '災害が発生している住所を教えてください。'
-      )
-      MessageTemplate.reply(replyToken, [msg])
+      const msg = Line.locationMsg()
+      Line.reply(replyToken, [msg])
       break
     }
     case 'サービス登録': {
@@ -74,11 +72,8 @@ function messageAnalysis(replyToken: string, userId: string, message: any) {
       // データを保存する
       draft.replace()
 
-      const msg = MessageTemplate.imageMsg(
-        '被害状況のわかる写真をアップロードしてください。',
-        'image'
-      )
-      MessageTemplate.reply(replyToken, [msg])
+      const msg = Line.imageMsg()
+      Line.reply(replyToken, [msg])
       break
     }
     case undefined: {
@@ -91,14 +86,11 @@ function messageAnalysis(replyToken: string, userId: string, message: any) {
         draft.update()
 
         // 日時確認用メッセージ
-        const msg = MessageTemplate.datetimePickerQuickMsg(
-          '確認した日時を教えてください。',
-          'datetime'
-        )
-        MessageTemplate.reply(replyToken, [msg])
+        const msg = Line.datetimePickerQuickMsg()
+        Line.reply(replyToken, [msg])
       } else if (message.type == 'image') {
         if (message.contentProvider.type == 'line') {
-          const response = MessageTemplate.getImage(message.id)
+          const response = Line.getImage(message.id)
           const fileBlob = response.getBlob().setName(message.id)
           const fileId = Context.saveDrive(fileBlob)
 
@@ -107,19 +99,19 @@ function messageAnalysis(replyToken: string, userId: string, message: any) {
           draft.update()
 
           let text = []
-          text.push(MessageTemplate.flexMsg('種類: 災害現場登録'))
-          text.push(MessageTemplate.flexMsg('住所: ' + draft.address))
-          text.push(MessageTemplate.flexMsg('確認日時: ' + draft.datetime))
-          text.push(MessageTemplate.flexMsg('状況: ' + draft.situation))
-          const msg = MessageTemplate.finalCheckMsg(text, draft.imagePath)
-          MessageTemplate.reply(replyToken, [msg])
+          text.push(Line.flexMsg('種類: 災害現場登録'))
+          text.push(Line.flexMsg('住所: ' + draft.address))
+          text.push(Line.flexMsg('確認日時: ' + draft.datetime))
+          text.push(Line.flexMsg('状況: ' + draft.situation))
+          const msg = Line.finalCheckMsg(text, draft.imagePath)
+          Line.reply(replyToken, [msg])
         }
       }
       break
     }
     default: {
-      const msg = MessageTemplate.defaultMsg(message.text)
-      MessageTemplate.reply(replyToken, [msg])
+      const msg = Line.simpleMsg(message.text)
+      Line.reply(replyToken, [msg])
       break
     }
   }
@@ -135,14 +127,11 @@ function postbackAnalysis(replyToken: string, userId: string, postback: any) {
       // 更新
       draft.update()
 
-      const datetimeMsg = MessageTemplate.defaultMsg(
+      const datetimeMsg = Line.simpleMsg(
         Context.datetime2japanese(postback.params.datetime)
       )
-      const questionMsg = MessageTemplate.checkConditionMsg(
-        'どんな状況ですか？',
-        'checkCondition'
-      )
-      MessageTemplate.reply(replyToken, [datetimeMsg, questionMsg])
+      const questionMsg = Line.checkConditionMsg()
+      Line.reply(replyToken, [datetimeMsg, questionMsg])
       break
     }
     case 'checkCondition': {
@@ -150,11 +139,8 @@ function postbackAnalysis(replyToken: string, userId: string, postback: any) {
       // 更新
       draft.update()
 
-      const msg = MessageTemplate.imageMsg(
-        '被害状況のわかる写真をアップロードしてください。',
-        'image'
-      )
-      MessageTemplate.reply(replyToken, [msg])
+      const msg = Line.imageMsg()
+      Line.reply(replyToken, [msg])
       break
     }
     case 'image': {
@@ -163,27 +149,27 @@ function postbackAnalysis(replyToken: string, userId: string, postback: any) {
       text += '住所: ' + draft.address + '\n'
       text += '確認日時: ' + draft.datetime + '\n'
       text += '状況: ' + draft.situation
-      const msg = MessageTemplate.defaultMsg(text)
-      MessageTemplate.reply(replyToken, [msg])
+      const msg = Line.simpleMsg(text)
+      Line.reply(replyToken, [msg])
     }
     case 'finalCheck': {
       switch (data['action']) {
         case 'register': {
           draft.save()
-          const msg = MessageTemplate.defaultMsg('登録しました！')
-          MessageTemplate.reply(replyToken, [msg])
+          const msg = Line.simpleMsg('登録しました！')
+          Line.reply(replyToken, [msg])
           break
         }
         case 'edit': {
-          const msg = MessageTemplate.defaultMsg('どの項目を編集しますか？')
-          MessageTemplate.reply(replyToken, [msg])
+          const msg = Line.simpleMsg('どの項目を編集しますか？')
+          Line.reply(replyToken, [msg])
           break
         }
         case 'discard': {
           // 下書きデータ削除
           draft.delete()
-          const msg = MessageTemplate.defaultMsg('破棄しました。')
-          MessageTemplate.reply(replyToken, [msg])
+          const msg = Line.simpleMsg('破棄しました。')
+          Line.reply(replyToken, [msg])
           break
         }
       }
